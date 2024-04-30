@@ -1,0 +1,246 @@
+ddp:
+  rank_start: 0
+  ddp_enable: True
+  world_size: 4
+  gpus: [1,2,3,4]
+  
+model:
+  train_model: "survf_fusion_nusc"
+  num_layers: 18
+  weights_init: True
+
+  #ablation - choose between fusion model(fusion) and baseline model(fsm)
+  depth_model: 'fusion'
+  pose_model: 'fusion'
+  
+  # Pose & depth share same encoder structure
+  fusion_level: 2
+  fusion_feat_in_dim: 256
+  use_skips: False
+  
+  # define the 3D voxel space
+  voxel_unit_size: [1.0, 1.0, 1.5] # size of unit voxel in (m), [x, y, z]
+  voxel_size: [100, 100, 20] # num of voxels in each dimension. [x, y, z]
+  voxel_str_p: [-50.0, -50.0, -15.0] # voxel start point [x, y, z]
+  voxel_pre_dim: [64]
+  proj_d_bins: 50
+  proj_d_str: 2
+  proj_d_end: 50
+
+  with_gt: False
+
+
+data:
+  data_path: './data/nuscenes/'
+  # data_path: './data/DDAD/ddad_debug.json'
+#  data_path: './data/DDAD/ddad.json'
+  # 改这个确定存储的model位置
+  log_dir: './results_ab/nusc/sur_vf_fusion_final/'
+  dataset: 'nuscenes'
+  back_context: 1
+  forward_context: 1
+  depth_type: 'lidar'
+  cameras: ['CAM_FRONT', 'CAM_FRONT_LEFT', 'CAM_FRONT_RIGHT', 'CAM_BACK_LEFT', 'CAM_BACK_RIGHT', 'CAM_BACK']
+  train_requirements: (gt_pose, gt_depth, mask)
+  val_requirements: (gt_pose, gt_depth, mask)
+  loss_gt: False
+
+training:
+  # Basic
+  height: 384
+  width: 640
+  scales: [0] 
+  frame_ids: [0, -1, 1]
+  
+  # optimization
+  batch_size: 1
+  num_workers: 8
+  learning_rate: 0.00005
+  num_epochs: 20
+  scheduler_step_size: 15
+
+  # model / loss setting
+  ## depth range
+  min_depth: 1.5
+  max_depth: 200.0
+
+  ## spatio & temporal
+  spatio: True
+  spatio_temporal: True
+
+  ## intensity align
+  intensity_align: True
+  
+  ## focal length scaling
+  focal_length_scale: 300
+
+  ## depth synthesis
+  aug_depth: False
+  aug_angle: [15, 15, 40] # 15deg(roll), 15deg(pitch), 40deg(yaw) augmentation
+
+  iter_num: [8, 8, 8, 8, 8]
+
+# Loss hyperparams
+loss:
+  disparity_smoothness: 0.001
+  spatio_coeff: 0.03
+  spatio_tempo_coeff: 0.1
+  pose_loss_coeff: 0.0
+  sys_coeff: 0.01
+  
+eval:
+  eval_batch_size: 1
+  eval_num_workers: 8
+  eval_min_depth: 0.5
+  eval_max_depth: 80
+  eval_visualize: False
+  syn_visualize: False
+  syn_idx: 245
+  
+load:
+  pretrain: True
+  weights: 'weights_19'
+  # 当亲最佳
+  # load_weights_dir: './results_ab/sur_vf_fusion_time_5/survf_fusion/models/weights_7e_112b'
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t2/survf_fusion_nusc/models/weights_0e_9999b'
+
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_2399b'
+#   metric | abs_rel: 0.191 | sq_rel: 1.894 | rms: 6.387 | log_rms: 0.286 | a1: 0.761 | a2: 0.900 | a3: 0.950
+#   median | abs_rel: 0.190 | sq_rel: 1.918 | rms: 6.481 | log_rms: 0.284 | a1: 0.764 | a2: 0.903 | a3: 0.950
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_899b'
+#   metric | abs_rel: 0.208 | sq_rel: 2.096 | rms: 6.451 | log_rms: 0.296 | a1: 0.743 | a2: 0.891 | a3: 0.946
+#   median | abs_rel: 0.210 | sq_rel: 2.174 | rms: 6.547 | log_rms: 0.292 | a1: 0.746 | a2: 0.897 | a3: 0.948
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_4199b'
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_599b'
+#   metric | abs_rel: 0.210 | sq_rel: 2.094 | rms: 6.490 | log_rms: 0.296 | a1: 0.742 | a2: 0.889 | a3: 0.944
+#   median | abs_rel: 0.205 | sq_rel: 2.020 | rms: 6.571 | log_rms: 0.292 | a1: 0.742 | a2: 0.895 | a3: 0.948
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_299b'
+#   metric | abs_rel: 0.222 | sq_rel: 2.690 | rms: 6.818 | log_rms: 0.308 | a1: 0.729 | a2: 0.883 | a3: 0.941
+#   median | abs_rel: 0.216 | sq_rel: 2.450 | rms: 6.863 | log_rms: 0.301 | a1: 0.736 | a2: 0.891 | a3: 0.944
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1499b'
+#   metric | abs_rel: 0.196 | sq_rel: 1.973 | rms: 6.356 | log_rms: 0.289 | a1: 0.755 | a2: 0.896 | a3: 0.949
+#   median | abs_rel: 0.197 | sq_rel: 1.983 | rms: 6.425 | log_rms: 0.286 | a1: 0.756 | a2: 0.900 | a3: 0.949
+
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1799b'
+
+  # load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_2699b'
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t4_gt/survf_fusion_nusc/models/weights_0e_99b'
+#   metric | abs_rel: 0.231 | sq_rel: 2.378 | rms: 6.864 | log_rms: 0.315 | a1: 0.710 | a2: 0.875 | a3: 0.938
+#   median | abs_rel: 0.221 | sq_rel: 2.144 | rms: 6.873 | log_rms: 0.308 | a1: 0.711 | a2: 0.881 | a3: 0.941
+
+  # load_weights_dir: './results_ab/nusc/sur_vf_fusion_t6_gt/survf_fusion_nusc/models/weights_0e_249b'
+#   metric | abs_rel: 0.227 | sq_rel: 2.546 | rms: 6.592 | log_rms: 0.309 | a1: 0.727 | a2: 0.886 | a3: 0.943
+#   median | abs_rel: 0.229 | sq_rel: 2.485 | rms: 6.724 | log_rms: 0.303 | a1: 0.727 | a2: 0.889 | a3: 0.944
+#
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t6_gt/survf_fusion_nusc/models/weights_0e_49b' # nusc的Ours
+#   metric | abs_rel: 0.238 | sq_rel: 2.448 | rms: 6.769 | log_rms: 0.315 | a1: 0.714 | a2: 0.876 | a3: 0.938
+#   median | abs_rel: 0.226 | sq_rel: 2.129 | rms: 6.787 | log_rms: 0.307 | a1: 0.711 | a2: 0.881 | a3: 0.940
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_3499b'
+#   metric | abs_rel: 0.323 | sq_rel: 8.940 | rms: 8.036 | log_rms: 0.346 | a1: 0.716 | a2: 0.872 | a3: 0.930
+#   median | abs_rel: 0.285 | sq_rel: 5.539 | rms: 7.839 | log_rms: 0.336 | a1: 0.711 | a2: 0.875 | a3: 0.933
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_1249b'
+#   metric | abs_rel: 0.311 | sq_rel: 10.515 | rms: 8.661 | log_rms: 0.348 | a1: 0.724 | a2: 0.876 | a3: 0.933
+#   median | abs_rel: 0.289 | sq_rel: 7.311 | rms: 8.590 | log_rms: 0.340 | a1: 0.716 | a2: 0.876 | a3: 0.93
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_2e_4451b'
+#   metric | abs_rel: 0.327 | sq_rel: 15.135 | rms: 9.027 | log_rms: 0.343 | a1: 0.743 | a2: 0.886 | a3: 0.938
+#   median | abs_rel: 0.293 | sq_rel: 9.129 | rms: 8.829 | log_rms: 0.336 | a1: 0.733 | a2: 0.884 | a3: 0.937
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_249b'
+#   metric | abs_rel: 0.318 | sq_rel: 7.029 | rms: 8.276 | log_rms: 0.349 | a1: 0.703 | a2: 0.868 | a3: 0.929
+#   median | abs_rel: 0.268 | sq_rel: 4.675 | rms: 7.965 | log_rms: 0.334 | a1: 0.711 | a2: 0.875 | a3: 0.933
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_149b'
+#   metric | abs_rel: 0.257 | sq_rel: 4.225 | rms: 7.226 | log_rms: 0.335 | a1: 0.711 | a2: 0.874 | a3: 0.935
+#   median | abs_rel: 0.256 | sq_rel: 3.422 | rms: 7.232 | log_rms: 0.327 | a1: 0.705 | a2: 0.876 | a3: 0.935
+#metric:  defaultdict(<class 'float'>, {'abs_rel': 0.2569620966247453, 'sq_rel': 4.224874837447229, 'rms': 7.226270856611414, 'log_rms': 0.3346287343023184, 'a1': 0.7108110672590883, 'a2': 0.8736436521153862, 'a3': 0.9345696373474638})
+#median  defaultdict(<class 'float'>, {'abs_rel': 0.25616824013857803, 'sq_rel': 3.4216631693250528, 'rms': 7.2320635212978175, 'log_rms': 0.32670979925716354, 'a1': 0.7049427302343938, 'a2': 0.875725011474629, 'a3': 0.9352520064833428})
+#metric-0:  {'abs_rel': 0.1535582978189685, 'sq_rel': 1.9863647479623783, 'rms': 7.160860222293064, 'log_rms': 0.2469452807116887, 'a1': 0.8055485308731485, 'a2': 0.9300230675261245, 'a3': 0.9697222368994916}
+#median-0:  {'abs_rel': 0.16642586816049312, 'sq_rel': 2.0211372554091778, 'rms': 7.206689100941543, 'log_rms': 0.2469641537069779, 'a1': 0.8011445946137316, 'a2': 0.9325315165925735, 'a3': 0.9710709910199544}
+#metric-1:  {'abs_rel': 0.22615166140924153, 'sq_rel': 2.706075672157905, 'rms': 6.9435211101845, 'log_rms': 0.33385888276800846, 'a1': 0.7006013027585056, 'a2': 0.8735734849442013, 'a3': 0.9342732616559769}
+#median-1:  {'abs_rel': 0.26318555430832197, 'sq_rel': 3.211257272016739, 'rms': 7.212584909288914, 'log_rms': 0.3307433041417447, 'a1': 0.6848727213299614, 'a2': 0.8626116623227581, 'a3': 0.9279818700230031}
+#metric-2:  {'abs_rel': 0.34575440445789357, 'sq_rel': 6.9714810676337695, 'rms': 7.725730613553482, 'log_rms': 0.38905946078122444, 'a1': 0.6686818791703254, 'a2': 0.8431566118191187, 'a3': 0.9132848939173596}
+#median-2:  {'abs_rel': 0.30763680404108873, 'sq_rel': 4.603511194117919, 'rms': 7.4241232018046475, 'log_rms': 0.3702154714673983, 'a1': 0.6612647789729375, 'a2': 0.851768951381658, 'a3': 0.9193805186870531}
+#metric-3:  {'abs_rel': 0.23954990739991397, 'sq_rel': 2.6489108268192867, 'rms': 6.422055125852694, 'log_rms': 0.33391379375194347, 'a1': 0.691877759624811, 'a2': 0.8649180494998464, 'a3': 0.9287263468658878}
+#median-3:  {'abs_rel': 0.255205467919626, 'sq_rel': 2.973225068221189, 'rms': 6.550522137820468, 'log_rms': 0.3268800166555716, 'a1': 0.7062544335807333, 'a2': 0.8680291076991773, 'a3': 0.9281151847731963}
+#metric-4:  {'abs_rel': 0.37813211472707414, 'sq_rel': 8.316167369241453, 'rms': 7.506021623145352, 'log_rms': 0.4031730905527313, 'a1': 0.6462973035173888, 'a2': 0.8309488457923995, 'a3': 0.9085899385719397}
+#median-4:  {'abs_rel': 0.3316715085390355, 'sq_rel': 4.953918970703875, 'rms': 7.276950997712208, 'log_rms': 0.3851988435393993, 'a1': 0.637167191917229, 'a2': 0.8376462700576806, 'a3': 0.9107582214734905}
+#metric-5:  {'abs_rel': 0.19862619360803305, 'sq_rel': 2.720249356852921, 'rms': 7.599436451593448, 'log_rms': 0.30082189758666356, 'a1': 0.7518596254263018, 'a2': 0.8992418475601756, 'a3': 0.9528211449837364}
+#median-5:  {'abs_rel': 0.21288423812216622, 'sq_rel': 2.7669292547528057, 'rms': 7.721510766330231, 'log_rms': 0.3002570053476215, 'a1': 0.7389526571669283, 'a2': 0.9017625584997593, 'a3': 0.9542052539948148}
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_199b'
+
+
+  # 2024 cfd文章使用的数据
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_t4_gt/survf_fusion_nusc/models/weights_0e_99b'
+#   metric | abs_rel: 0.231 | sq_rel: 2.378 | rms: 6.864 | log_rms: 0.315 | a1: 0.710 | a2: 0.875 | a3: 0.938
+#   median | abs_rel: 0.221 | sq_rel: 2.144 | rms: 6.873 | log_rms: 0.308 | a1: 0.711 | a2: 0.881 | a3: 0.941
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1499b' # my
+
+  models_to_load: ['depth_estimation_net','pose_estimation_net']
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_149b'
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t4_gt/survf_fusion_nusc/models/weights_0e_99b'
+
+# 对比试验，这个是vfdepth，也是对比实验中的全无
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_249b'
+#   metric | abs_rel: 0.318 | sq_rel: 7.029 | rms: 8.276 | log_rms: 0.349 | a1: 0.703 | a2: 0.868 | a3: 0.929
+#   median | abs_rel: 0.268 | sq_rel: 4.675 | rms: 7.965 | log_rms: 0.334 | a1: 0.711 | a2: 0.875 | a3: 0.933
+
+# 对比试验，这个是缺少loss的引入
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_199b'
+
+# 对比试验，这个是缺少overlap的处理
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1499b'
+
+# 这个是全有
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_2399b'
+
+#   metric | abs_rel: 0.191 | sq_rel: 1.894 | rms: 6.387 | log_rms: 0.286 | a1: 0.761 | a2: 0.900 | a3: 0.950
+#   median | abs_rel: 0.190 | sq_rel: 1.918 | rms: 6.481 | log_rms: 0.284 | a1: 0.764 | a2: 0.903 | a3: 0.950
+
+
+# 全无
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_249b'
+
+# 无loss
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_149b'
+
+# 无overlap
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_t2/survf_fusion_nusc/models/weights_0e_9999b'
+# 全有
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_t6_gt/survf_fusion_nusc/models/weights_0e_49b' # nusc的Ours
+
+  #load_weights_dir: './results_ab/viv/vic_vf_fusion_time_3/survf_fusion/models/weights_6e_1993b'
+
+  # load_weights_dir: './results_ab/sur_vf_fusion_time_10_gt/survf_fusion/models/weights_0e_104b'
+
+  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_299b'
+logging:
+  early_phase: 2000
+  log_frequency: 250
+  early_log_frequency: 100
+  late_log_frequency: 1000
+  save_frequency: 1
+  board_pth: './board/M2_sur_vf_fusion_nusc_4ev/log'

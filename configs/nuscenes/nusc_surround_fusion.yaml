@@ -1,0 +1,125 @@
+datatype:
+  dataset: "nuscenes"
+
+
+ddp:
+  ddp_enable: True
+  world_size: 4
+  gpus: [0,1,2,3]
+  
+model:
+  num_layers: 18
+  weights_init: True
+
+  #ablation - choose between fusion model(fusion) and baseline model(fsm)
+  depth_model: 'fusion'
+  pose_model: 'fusion'
+  
+  # Pose & depth share same encoder structure
+  fusion_level_list :  [64, 64, 128, 256, 512]
+  input_channel_level: 2
+  CVT_iter_num: 8
+#  fusion_level_start_dim: 896
+
+  fusion_level: 2
+  fusion_feat_in_dim: 256
+  use_skips: False
+  
+  # define the 3D voxel spacezz [x, y, z]
+  voxel_unit_size: [1.0, 1.0, 1.5] # size of unit voxel in (m), [x, y, z]
+  voxel_size: [100, 100, 20] # num of voxels in each dimension. [x, y, z]
+  voxel_str_p: [-50.0, -50.0, -15.0] # voxel start point [x, y, z]
+  voxel_pre_dim: [64]
+  proj_d_bins: 50
+  proj_d_str: 2
+  proj_d_end: 50
+  eps: 1e-8
+  bpro_feat_out_dim: 128
+
+  # the element below is related to posenet
+  pose_encoder_layer: 18
+  num_pose_frames: 2
+  joint_pose: False
+  pose_model_type: "if_solo"
+
+data:
+  data_path: './data/nuscenes/'
+  log_dir: './results_nusc/'
+  dataset: 'nuscenes'
+  back_context: 1
+  forward_context: 1
+  depth_type: 'lidar'
+  cameras: ['CAM_FRONT', 'CAM_FRONT_LEFT', 'CAM_FRONT_RIGHT', 'CAM_BACK_LEFT', 'CAM_BACK_RIGHT', 'CAM_BACK']
+  train_requirements: (gt_pose, mask)
+  val_requirements: (gt_pose, gt_depth, mask)
+
+training:
+  # Basic
+#  height: 352
+  height: 384
+  width: 640
+  scales: [0,1,2]
+  frame_ids: [0, -1, 1]
+  
+  # optimization
+  batch_size: 2
+  num_workers: 4
+  learning_rate: 0.00007
+  num_epochs: 10
+  scheduler_step_size: 15
+
+  # model / loss setting
+  ## depth range
+  min_depth: 1.5
+  max_depth: 80.0
+
+  ## spatio & temporal
+  spatio: True
+  spatio_temporal: True
+
+  spatial: False
+  use_sfm_spatial: False
+  automasking: True
+  avg_reprojection: False
+  predictive_mask: False
+  use_fix_mask: False
+  spatial_weight: 0.1
+  disparity_smoothness_weight: 0.001
+
+  ## intensity align
+  intensity_align: True
+  
+  ## focal length scaling
+  focal_length_scale: 300
+
+  ## depth synthesis
+  aug_depth: False
+  aug_angle: [15, 15, 40] # 15deg(roll), 15deg(pitch), 40deg(yaw) augmentation
+
+# Loss hyperparams
+loss:
+  disparity_smoothness: 0.001
+  spatio_coeff: 0.03
+  spatio_tempo_coeff: 0.1
+  pose_loss_coeff: 0.0
+  
+eval:
+  eval_batch_size: 4
+  eval_num_workers: 4
+  eval_min_depth: 0
+  eval_max_depth: 80
+  eval_visualize: False
+  syn_visualize: False
+  syn_idx: 245
+  
+load:
+  pretrain: False
+  weights: 'weights_4'
+  models_to_load: ['depth_net']
+  
+logging:
+  model_name: "m2depth"
+  early_phase: 2000
+  log_frequency: 100
+  late_log_frequency: 1000
+  save_frequency: 1

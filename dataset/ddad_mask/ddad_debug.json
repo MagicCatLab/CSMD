@@ -1,0 +1,20 @@
+{
+  "scene_splits": {
+    "0": {
+      "filenames": [
+        "000000/scene_5c5616b2e583b5fb4f25013580172d1df43b8a31.json",
+        "000001/scene_b777e49e91ab54ae1798d0176ab178de4fbc3947.json",
+        "000002/scene_5876e04755cdcd1a8dbe053277cf95f9700e3639.json",
+        "000003/scene_0d42e597277972b4f79c8a2295cf15a8f9a39b00.json"
+      ]
+    },
+    "1": {
+      "filenames": [
+        "000150/scene_e0e3d5670180e5afc85f0e07d359864fedcc04c7.json",
+        "000151/scene_74729a93acc540cc11af1fdcf3e101dedd00dd84.json"
+      ]
+    }
+  }
+}
+
+

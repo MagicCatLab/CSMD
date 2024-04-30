@@ -1,0 +1,202 @@
+ddp:
+  rank_start: 0
+  ddp_enable: True
+  world_size: 4
+  gpus: [0,1,2,3]
+  
+model:
+  train_model: "survf_fusion_nusc"
+  num_layers: 18
+  weights_init: True
+
+  #ablation - choose between fusion model(fusion) and baseline model(fsm)
+  depth_model: 'fusion'
+  pose_model: 'fusion'
+  
+  # Pose & depth share same encoder structure
+  fusion_level: 2
+  fusion_feat_in_dim: 256
+  use_skips: False
+  
+  # define the 3D voxel space
+  voxel_unit_size: [1.0, 1.0, 1.5] # size of unit voxel in (m), [x, y, z]
+  voxel_size: [100, 100, 20] # num of voxels in each dimension. [x, y, z]
+  voxel_str_p: [-50.0, -50.0, -15.0] # voxel start point [x, y, z]
+  voxel_pre_dim: [64]
+  proj_d_bins: 50
+  proj_d_str: 2
+  proj_d_end: 50
+
+  with_gt: False
+
+
+data:
+  data_path: './data/nuscenes/'
+  # data_path: './data/DDAD/ddad_debug.json'
+#  data_path: './data/DDAD/ddad.json'
+  # 改这个确定存储的model位置
+  log_dir: './results_ab/nusc/sur_vf_fusion_final/'
+  dataset: 'nuscenes'
+  back_context: 1
+  forward_context: 1
+  depth_type: 'lidar'
+  cameras: ['CAM_FRONT', 'CAM_FRONT_LEFT', 'CAM_FRONT_RIGHT', 'CAM_BACK_LEFT', 'CAM_BACK_RIGHT', 'CAM_BACK']
+  train_requirements: (gt_pose, gt_depth, mask)
+  val_requirements: (gt_pose, gt_depth, mask)
+  loss_gt: False
+
+training:
+  # Basic
+  height: 384
+  width: 640
+  scales: [0] 
+  frame_ids: [0, -1, 1]
+  
+  # optimization
+  batch_size: 1
+  num_workers: 8
+  learning_rate: 0.00005
+  num_epochs: 20
+  scheduler_step_size: 15
+
+  # model / loss setting
+  ## depth range
+  min_depth: 1.5
+  max_depth: 200.0
+
+  ## spatio & temporal
+  spatio: True
+  spatio_temporal: True
+
+  ## intensity align
+  intensity_align: True
+  
+  ## focal length scaling
+  focal_length_scale: 300
+
+  ## depth synthesis
+  aug_depth: False
+  aug_angle: [15, 15, 40] # 15deg(roll), 15deg(pitch), 40deg(yaw) augmentation
+
+  iter_num: [8, 8, 8, 8, 8]
+
+# Loss hyperparams
+loss:
+  disparity_smoothness: 0.001
+  spatio_coeff: 0.03
+  spatio_tempo_coeff: 0.1
+  pose_loss_coeff: 0.0
+  sys_coeff: 0.01
+  
+eval:
+  eval_batch_size: 1
+  eval_num_workers: 8
+  eval_min_depth: 0.5
+  eval_max_depth: 200
+  eval_visualize: False
+  syn_visualize: False
+  syn_idx: 245
+  
+load:
+  pretrain: True
+  weights: 'weights_19'
+  # 当亲最佳
+  # load_weights_dir: './results_ab/sur_vf_fusion_time_5/survf_fusion/models/weights_7e_112b'
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t2/survf_fusion_nusc/models/weights_0e_9999b'
+
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_2399b'
+#   metric | abs_rel: 0.191 | sq_rel: 1.894 | rms: 6.387 | log_rms: 0.286 | a1: 0.761 | a2: 0.900 | a3: 0.950
+#   median | abs_rel: 0.190 | sq_rel: 1.918 | rms: 6.481 | log_rms: 0.284 | a1: 0.764 | a2: 0.903 | a3: 0.950
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_899b'
+#   metric | abs_rel: 0.208 | sq_rel: 2.096 | rms: 6.451 | log_rms: 0.296 | a1: 0.743 | a2: 0.891 | a3: 0.946
+#   median | abs_rel: 0.210 | sq_rel: 2.174 | rms: 6.547 | log_rms: 0.292 | a1: 0.746 | a2: 0.897 | a3: 0.948
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_4199b'
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_599b'
+#   metric | abs_rel: 0.210 | sq_rel: 2.094 | rms: 6.490 | log_rms: 0.296 | a1: 0.742 | a2: 0.889 | a3: 0.944
+#   median | abs_rel: 0.205 | sq_rel: 2.020 | rms: 6.571 | log_rms: 0.292 | a1: 0.742 | a2: 0.895 | a3: 0.948
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_299b'
+#   metric | abs_rel: 0.222 | sq_rel: 2.690 | rms: 6.818 | log_rms: 0.308 | a1: 0.729 | a2: 0.883 | a3: 0.941
+#   median | abs_rel: 0.216 | sq_rel: 2.450 | rms: 6.863 | log_rms: 0.301 | a1: 0.736 | a2: 0.891 | a3: 0.944
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1499b'
+#   metric | abs_rel: 0.196 | sq_rel: 1.973 | rms: 6.356 | log_rms: 0.289 | a1: 0.755 | a2: 0.896 | a3: 0.949
+#   median | abs_rel: 0.197 | sq_rel: 1.983 | rms: 6.425 | log_rms: 0.286 | a1: 0.756 | a2: 0.900 | a3: 0.949
+
+  #load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_1799b'
+
+  # load_weights_dir: './results_ab/nusc/sur_vf_fusion_t3_gt/survf_fusion_nusc/models/weights_0e_2699b'
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t4_gt/survf_fusion_nusc/models/weights_0e_99b'
+#   metric | abs_rel: 0.231 | sq_rel: 2.378 | rms: 6.864 | log_rms: 0.315 | a1: 0.710 | a2: 0.875 | a3: 0.938
+#   median | abs_rel: 0.221 | sq_rel: 2.144 | rms: 6.873 | log_rms: 0.308 | a1: 0.711 | a2: 0.881 | a3: 0.941
+
+  # load_weights_dir: './results_ab/nusc/sur_vf_fusion_t6_gt/survf_fusion_nusc/models/weights_0e_249b'
+#   metric | abs_rel: 0.227 | sq_rel: 2.546 | rms: 6.592 | log_rms: 0.309 | a1: 0.727 | a2: 0.886 | a3: 0.943
+#   median | abs_rel: 0.229 | sq_rel: 2.485 | rms: 6.724 | log_rms: 0.303 | a1: 0.727 | a2: 0.889 | a3: 0.944
+#
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_t6_gt/survf_fusion_nusc/models/weights_0e_49b'
+#   metric | abs_rel: 0.238 | sq_rel: 2.448 | rms: 6.769 | log_rms: 0.315 | a1: 0.714 | a2: 0.876 | a3: 0.938
+#   median | abs_rel: 0.226 | sq_rel: 2.129 | rms: 6.787 | log_rms: 0.307 | a1: 0.711 | a2: 0.881 | a3: 0.940
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_3499b'
+#   metric | abs_rel: 0.323 | sq_rel: 8.940 | rms: 8.036 | log_rms: 0.346 | a1: 0.716 | a2: 0.872 | a3: 0.930
+#   median | abs_rel: 0.285 | sq_rel: 5.539 | rms: 7.839 | log_rms: 0.336 | a1: 0.711 | a2: 0.875 | a3: 0.933
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_1249b'
+#   metric | abs_rel: 0.311 | sq_rel: 10.515 | rms: 8.661 | log_rms: 0.348 | a1: 0.724 | a2: 0.876 | a3: 0.933
+#   median | abs_rel: 0.289 | sq_rel: 7.311 | rms: 8.590 | log_rms: 0.340 | a1: 0.716 | a2: 0.876 | a3: 0.93
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_2e_4451b'
+#   metric | abs_rel: 0.327 | sq_rel: 15.135 | rms: 9.027 | log_rms: 0.343 | a1: 0.743 | a2: 0.886 | a3: 0.938
+#   median | abs_rel: 0.293 | sq_rel: 9.129 | rms: 8.829 | log_rms: 0.336 | a1: 0.733 | a2: 0.884 | a3: 0.937
+
+
+#  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_249b'
+#   metric | abs_rel: 0.318 | sq_rel: 7.029 | rms: 8.276 | log_rms: 0.349 | a1: 0.703 | a2: 0.868 | a3: 0.929
+#   median | abs_rel: 0.268 | sq_rel: 4.675 | rms: 7.965 | log_rms: 0.334 | a1: 0.711 | a2: 0.875 | a3: 0.933
+
+
+  load_weights_dir: './results_ab/nusc/sur_vf_fusion_final/survf_fusion_nusc/models/weights_0e_149b'
+#   metric | abs_rel: 0.261 | sq_rel: 5.064 | rms: 7.908 | log_rms: 0.339 | a1: 0.710 | a2: 0.872 | a3: 0.934
+#   median | abs_rel: 0.262 | sq_rel: 4.330 | rms: 8.105 | log_rms: 0.333 | a1: 0.703 | a2: 0.873 | a3: 0.934
+
+
+#   metric | abs_rel: 0.260 | sq_rel: 5.040 | rms: 7.931 | log_rms: 0.342 | a1: 0.705 | a2: 0.870 | a3: 0.933
+#   median | abs_rel: 0.268 | sq_rel: 4.522 | rms: 8.231 | log_rms: 0.335 | a1: 0.699 | a2: 0.872 | a3: 0.933
+#metric:  defaultdict(<class 'float'>, {'abs_rel': 0.2600273817977523, 'sq_rel': 5.0404928462240255, 'rms': 7.93098277707046, 'log_rms': 0.3422407722606643, 'a1': 0.7045374078997356, 'a2': 0.8704016753603367, 'a3': 0.93270752177768})
+#median  defaultdict(<class 'float'>, {'abs_rel': 0.2680132435282276, 'sq_rel': 4.521770763731741, 'rms': 8.23093693906743, 'log_rms': 0.335092719896237, 'a1': 0.6985414021419073, 'a2': 0.8715568599712082, 'a3': 0.9327850594871796})
+#metric-0:  {'abs_rel': 0.15684805665621132, 'sq_rel': 2.5472213569144846, 'rms': 8.098713748543513, 'log_rms': 0.2557497446964935, 'a1': 0.7997180854611804, 'a2': 0.9265078621661507, 'a3': 0.9677171790778076}
+#median-0:  {'abs_rel': 0.1763902543030455, 'sq_rel': 2.7808457923434484, 'rms': 8.398043151764009, 'log_rms': 0.2566257157979008, 'a1': 0.7941379635894796, 'a2': 0.9284844867099755, 'a3': 0.9686117583873066}
+#metric-1:  {'abs_rel': 0.22927548365730388, 'sq_rel': 3.2875063127631936, 'rms': 7.635264625953356, 'log_rms': 0.34301828536073814, 'a1': 0.6919046505399905, 'a2': 0.8697074465130404, 'a3': 0.9317591322432238}
+#median-1:  {'abs_rel': 0.27811233950814945, 'sq_rel': 4.52687441816635, 'rms': 8.369479040350667, 'log_rms': 0.3405223550728509, 'a1': 0.6743821823731881, 'a2': 0.8557556804942814, 'a3': 0.9242670768540087}
+#metric-2:  {'abs_rel': 0.3499321439952478, 'sq_rel': 8.57215993917993, 'rms': 8.461598691353615, 'log_rms': 0.3964087244261449, 'a1': 0.6655934921628327, 'a2': 0.840791128767929, 'a3': 0.9120065069614531}
+#median-2:  {'abs_rel': 0.32321757062353595, 'sq_rel': 6.266302248633929, 'rms': 8.405885410714308, 'log_rms': 0.3791430515239044, 'a1': 0.6563741643152318, 'a2': 0.8486330696839467, 'a3': 0.9174343145873486}
+#metric-3:  {'abs_rel': 0.24156967271721097, 'sq_rel': 3.1525857715991417, 'rms': 6.9969824085832855, 'log_rms': 0.3414221192175928, 'a1': 0.6831118889285902, 'a2': 0.8613403339873541, 'a3': 0.9265693500885581}
+#median-3:  {'abs_rel': 0.26606131624997775, 'sq_rel': 3.8398499488015636, 'rms': 7.399362273936521, 'log_rms': 0.33452334220044744, 'a1': 0.6990688334224143, 'a2': 0.86361069093997, 'a3': 0.9254055048473343}
+#metric-4:  {'abs_rel': 0.38179105028815435, 'sq_rel': 9.585844094512405, 'rms': 8.08751981435985, 'log_rms': 0.4104239517141691, 'a1': 0.6391229849128132, 'a2': 0.8273489034425802, 'a3': 0.906827468168522}
+#median-4:  {'abs_rel': 0.34639825062537094, 'sq_rel': 6.384236558476483, 'rms': 8.168513260651102, 'log_rms': 0.3936474698098665, 'a1': 0.6313916761404048, 'a2': 0.8342617784470502, 'a3': 0.9085580287069682}
+#metric-5:  {'abs_rel': 0.20074788360098797, 'sq_rel': 3.0976396380413584, 'rms': 8.305817363797814, 'log_rms': 0.3064218083675418, 'a1': 0.7477733465893277, 'a2': 0.8967143747338691, 'a3': 0.9513654926616767}
+#median-5:  {'abs_rel': 0.21789972838004049, 'sq_rel': 3.332515635579764, 'rms': 8.644338511179487, 'log_rms': 0.3060943846093435, 'a1': 0.7358935890254751, 'a2': 0.8985954530843844, 'a3': 0.9524336726502208}
+
+
+  models_to_load: ['depth_estimation_net','pose_estimation_net']
+
+logging:
+  early_phase: 2000
+  log_frequency: 250
+  early_log_frequency: 100
+  late_log_frequency: 1000
+  save_frequency: 1
+  board_pth: './board/M2_sur_vf_fusion_nusc_4ev/log'
